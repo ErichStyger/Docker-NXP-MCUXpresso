@@ -1,0 +1,60 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+	"name": "FRDM-MCXN947_EZH",
+	"build": {
+        "dockerfile": "Dockerfile" // use local docker file
+    },
+
+    "runArgs": [ 
+        // host.docker.internal is set by default in docker desktop to access the host IP address.
+        // For normal docker the line below is needed to access the host from the container.
+        // For docker desktop, this is not needed.
+        "--add-host=host.docker.internal:172.17.0.1",
+ 
+        "--privileged",   // needed for J-Link to access the J-Link device
+        "--group-add=20", // add the dialout group to the container, needed for J-Link to access the J-Link device
+
+        "--env-file",".devcontainer/devcontainer.env" // load environment variables from file, needed for JRun to provide J-Link IP address
+     ],
+    "mounts": [
+        "source=/dev/bus/usb,target=/dev/bus/usb,type=bind" // make the USB bus available in the container, needed for J-Link to access the J-Link device
+    ],
+
+    // use a shorter path ("/workspace") for folder in the container.
+    // This has to be cut of as prefix in semihosting file operations
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "workspaceFolder": "/workspace",
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Configure tool-specific properties.
+    // Set *default* container specific settings.json values on container create.
+    "customizations": {
+        "vscode": {
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "mcu-debug.debug-tracker-vscode",
+                "marus25.cortex-debug",
+                "nxpsemiconductors.mcuxpresso",
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
+                "ms-vscode.vscode-serial-monitor",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-azuretools.vscode-docker",
+                "jacqueslucke.gcov-viewer"
+            ]
+        }
+    },
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+    "remoteUser": "vscode"
+}
