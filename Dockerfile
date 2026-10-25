@@ -259,6 +259,19 @@ RUN set -eu; \
 # add LinkServer to the PATH
 ENV PATH="/usr/local/LinkServer_${LINKSERVER_VERSION}:${PATH}"
 
+
+# Download and install addditional NXP debugger support
+RUN \
+    cd /apps \
+    && wget -O debug_common.tar "https://www.nxp.com/lgfiles/updates/mcuxpresso/debug_common-26.09.tar"
+USER vscode
+RUN \
+    mkdir -p /home/vscode/.mcuxpressotools/debug_common-26.09 \
+    && tar -xf /apps/debug_common.tar -C /home/vscode/.mcuxpressotools/debug_common-26.09
+# back to root
+USER root
+
+
 # Install SSH client for private GitHub submodules
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openssh-client
