@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/devcontainers/cpp:dev-ubuntu24.04
 WORKDIR /apps
 RUN mkdir -p /apps
 
-# Create user directory, needed by MCUXpresso tools. Directory has to be owned by the user
+# Create user directory, needed by MCUXpresso tools. Directory has to be owned by the user which is 'vsocde'
 USER vscode
 RUN mkdir -p /home/vscode
 # switch back to root
@@ -22,6 +22,7 @@ ARG HOST_MACHINE_X64_ARM64="x64"
 ARG HOST_MACHINE_INTEL64_ARM64="x86_64"
 #ARG HOST_MACHINE_INTEL64_ARM64="arm64"
 
+#####################################################################################################
 # Install prerequisites
 RUN \
     apt-get update \
@@ -29,17 +30,15 @@ RUN \
     && apt-get install -y python3 python3-pip python3-venv \
     && apt-get install -y cmake build-essential ninja-build \
     && apt-get install -y gcc-arm-none-eabi gdb-arm-none-eabi libnewlib-arm-none-eabi \
-    && apt-get install -y doxygen graphviz
-
-# Install curl and others, needed to get SEGGER and other files
-RUN \
-    apt-get update \
+    && apt-get install -y doxygen graphviz \
     && apt-get install -y apt-transport-https ca-certificates curl software-properties-common \
     && apt-get install -y libx11-xcb1 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
     && apt-get install -y libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 \
     && apt-get install -y libxcb-xkb1 libxkbcommon-x11-0 libxkbcommon0 xkb-data \
     && apt-get install -y udev
 
+
+#####################################################################################################
 # Install the more recent CMake version, as the Ubuntu 24.04 comes with 3.28.3
 ARG CMAKE_VERSION=3.30.9
 RUN wget -q \
@@ -51,6 +50,8 @@ RUN wget -q \
        -C /opt/cmake
 ENV PATH="/opt/cmake/bin:${PATH}"
 
+
+#####################################################################################################
 # Install Ninja 1.13.2
 ARG NINJA_VERSION=1.13.2
 RUN curl -fL \
@@ -59,6 +60,8 @@ RUN curl -fL \
     && unzip -o /apps/ninja.zip -d /usr/local/bin \
     && chmod +x /usr/local/bin/ninja
 
+
+#####################################################################################################
 # Get a specific version of the arm toolchain
 ARG TOOLCHAIN_VERSION="15.2.1-1.1"
 # x86:              xpack-arm-none-eabi-gcc-${TOOLCHAIN_VERSION}-linux-x86.tar.gz
@@ -71,6 +74,8 @@ RUN \
     && rm gcc-arm-none-eabi.tar.gz \
     && ln -s /opt/gcc-arm-none-eabi-${TOOLCHAIN_VERSION}/bin/* /usr/local/bin
 
+
+#####################################################################################################
 # Coverage support with gcov and gcvor
 # for gcov, have to use the one matching for arm-none-eabi-gcov
 RUN \
@@ -85,13 +90,17 @@ RUN \
 # add location of gcovr inside the virtual environment to the path
 ENV PATH="/apps/venv/bin:${PATH}"
 
+
+#####################################################################################################
 # Python dependencies for NXP MCUXpresso SDK
 RUN /apps/venv/bin/python -m pip install --no-cache-dir \
     PyYAML \
     jsonschema \
     pykwalify
 
-# Install SEGGER
+
+#####################################################################################################
+# Install SEGGER debugging tools
 # for x86:           JLink_Linux_V980_x86_64.deb
 # for Apple silicon: JLink_Linux_V980_arm64.deb
 ARG SEGGER_VERSION="V980"
@@ -107,27 +116,8 @@ RUN \
     && dpkg --configure jlink \
     && apt install -yf
 
-# ---------------------------------------------------------------------------
-# Passwordless sudo through a dedicated group, and a pkexec replacement for
-# the npm "sudo-prompt" library (used by the MCUXpresso Installer). The real
-# pkexec needs polkitd, dbus and a polkit authentication agent, none of
-# which run inside a container (no systemd-logind session).
-# ---------------------------------------------------------------------------
-# Group whose members can use sudo without being asked for a password
-RUN groupadd -f sudonopasswd \
-    && usermod -aG sudonopasswd vscode \
-    && echo '%sudonopasswd ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/90-sudonopasswd \
-    && chmod 440 /etc/sudoers.d/90-sudonopasswd \
-    && visudo -c
- 
-# Install the pkexec replacement at the exact path sudo-prompt checks.
-# dpkg-divert prevents a later 'apt install pkexec' from overwriting it.
-COPY pkexec-shim.sh /tmp/pkexec-shim.sh
-RUN dpkg-divert --local --rename --add /usr/bin/pkexec \
-    && install -m 755 /tmp/pkexec-shim.sh /usr/bin/pkexec \
-    && sed -i 's/\r$//' /usr/bin/pkexec \
-    && rm /tmp/pkexec-shim.sh
 
+#####################################################################################################
 # Download and install MCUXpresso Installer
 # x86:              MCUXpressoInstaller.deb.bin
 # Apple silicon:    MCUXpressoInstaller_arm64.dmg
@@ -154,11 +144,9 @@ RUN sudo /apps/mcuxpresso-installer
 USER root
 # need to set the following variable for the Installer GUI to work
 ENV XDG_SESSION_TYPE=wayland
-
 # Install needed libraries to run the MCUXpresso Installer GUI
 # NOTE that while this will run the GUI in the container (WSL in my case), this is not supported by NXP
 # Files are only installed so one can use the 'Open MCUXpresso Installer' from the NXP extension.
-# Do NOT use the installer to update files, as this might not work.
 RUN \
     sudo apt-get update \
     && sudo apt-get install -y \
@@ -172,7 +160,39 @@ RUN \
         libx11-xcb1 libxcb1 libxcb-dri3-0 libasound2t64\
         libfontconfig1 fonts-liberation \
         libcups2 libdbus-1-3 libexpat1 libssl3
+# ---------------------------------------------------------------------------
+# Passwordless sudo through a dedicated group, and a pkexec replacement for
+# the npm "sudo-prompt" library (used by the MCUXpresso Installer). The real
+# pkexec needs polkitd, dbus and a polkit authentication agent, none of
+# which run inside a container (no systemd-logind session).
+# ---------------------------------------------------------------------------
+# Group whose members can use sudo without being asked for a password
+RUN groupadd -f sudonopasswd \
+    && usermod -aG sudonopasswd vscode \
+    && echo '%sudonopasswd ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/90-sudonopasswd \
+    && chmod 440 /etc/sudoers.d/90-sudonopasswd \
+    && visudo -c
+ 
+# Install the pkexec replacement at the exact path sudo-prompt checks.
+# dpkg-divert prevents a later 'apt install pkexec' from overwriting it.
+COPY pkexec-shim.sh /tmp/pkexec-shim.sh
+RUN dpkg-divert --local --rename --add /usr/bin/pkexec \
+    && install -m 755 /tmp/pkexec-shim.sh /usr/bin/pkexec \
+    && sed -i 's/\r$//' /usr/bin/pkexec \
+    && rm /tmp/pkexec-shim.sh
 
+
+#####################################################################################################
+# Create directories expected by the MCUXpresso VS Code extension:
+USER vscode
+RUN \
+       mkdir -p /home/vscode/.mcuxpressotools/.mcux-venv-3.12/bin/ \
+    && mkdir -p /home/vscode/.mcuxpressotools/mcux-fixelf-14.2.2/
+# Back to root
+USER root
+
+
+#####################################################################################################
 # Install the MCUXpresso Config tools
 # Install MCUXpresso Config Tools
 # The installer is downloaded manually from NXP.
@@ -199,16 +219,14 @@ RUN \
 # Back as root
 USER root
 
+#####################################################################################################
 # Download and install PEMICRO debug software
-# "10110000" ==> v10.11
-# first, install library dependencies:
+# Note: file name with "10110000" means v10.11
 RUN \
     apt-get install -y libusb-0.1-4
 RUN \
     cd /apps \
     && wget -O pemicro-gdb.deb "https://www.pemicro.com/fixedlinks/pemicrogdbserver_10110000_x64.deb" 
-    #\
-    #&& unzip pemicro-gdb.zip -d pemicro-drivers
 # installing the .deb file without the postinst script inside the package: need to set USB drivers on the host.
 RUN dpkg-deb -x /apps/pemicro-gdb.deb / \
     && chmod 755 /usr/local/pemicrogdbserver/pegdbserver_console \
@@ -221,7 +239,7 @@ RUN dpkg-deb -x /apps/pemicro-gdb.deb / \
 # add to path
 ENV PATH="/usr/local/pemicrogdbserver:/usr/local/pemicrogdbserver/gdb:${PATH}"
 
-
+#####################################################################################################
 # Install NXP LinkServer software
 # which version to use:
 ARG LINKSERVER_VERSION="26.9.130"
@@ -255,11 +273,10 @@ RUN set -eu; \
     PATH="/tmp/nxp-udev-shim:$PATH" dpkg --configure -a; \
     rm -rf /tmp/nxp-udev-shim; \
     dpkg --audit
-
 # add LinkServer to the PATH
 ENV PATH="/usr/local/LinkServer_${LINKSERVER_VERSION}:${PATH}"
 
-
+#####################################################################################################
 # Download and install addditional NXP debugger support
 RUN \
     cd /apps \
@@ -271,19 +288,12 @@ RUN \
 # back to root
 USER root
 
-
+#####################################################################################################
 # Install SSH client for private GitHub submodules
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openssh-client
 
-# Create a few directories expected by the MCUXpresso extension:
-USER vscode
-RUN \
-       mkdir -p /home/vscode/.mcuxpressotools/.mcux-venv-3.12/bin/ \
-    && mkdir -p /home/vscode/.mcuxpressotools/mcux-fixelf-14.2.2/
-# Back as root
-USER root
-
+#####################################################################################################
 # Set environment variables needed: 
 # where the MCUXpresso SDK is located:
 ENV MCUXPRESSO_SDK_PATH=/workspace/sdk/
