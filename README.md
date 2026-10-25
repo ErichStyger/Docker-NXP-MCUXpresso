@@ -3,6 +3,15 @@ This project contains a blueprint for using NXP MCUXpresso with docker.
 It includes DevContainer files for VS Code, plus docker files to use and share in a CI/CD environment.
 The image is pushed to dockerhub: https://hub.docker.com/repository/docker/erichstyger/nxp-mcuxpresso-image/general
 
+## Content
+The image/container includes the following:
+- Toolchain for ARM Cortex-M, including CMake and Ninja
+- Debugging tools: NXP LinkServer, SEGGER J-Link and PEMicro (P&E)
+- NXP MCUXpresso Installer to install extra components if needed
+- NXP Config tools with offline data files
+- all other necessary tools for development
+
+
 ## Using Docker
 - install docker from [www.docker.com](https://www.docker.com/) and have it running
 - open a consoel and `cd` to this folder and create docker image:
