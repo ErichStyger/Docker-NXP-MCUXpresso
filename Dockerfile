@@ -172,7 +172,6 @@ RUN groupadd -f sudonopasswd \
     && echo '%sudonopasswd ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/90-sudonopasswd \
     && chmod 440 /etc/sudoers.d/90-sudonopasswd \
     && visudo -c
- 
 # Install the pkexec replacement at the exact path sudo-prompt checks.
 # dpkg-divert prevents a later 'apt install pkexec' from overwriting it.
 COPY pkexec-shim.sh /tmp/pkexec-shim.sh
