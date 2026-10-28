@@ -39,6 +39,16 @@ RUN \
 
 
 #####################################################################################################
+# Install west (e.g. for Zephyr)
+RUN \
+    apt-get update \
+    && apt-get install -y pipx \
+    && pipx ensurepath
+USER vscode
+RUN pipx install west
+USER root
+
+#####################################################################################################
 # Install the more recent CMake version, as the Ubuntu 24.04 comes with 3.28.3
 ARG CMAKE_VERSION=3.30.9
 RUN wget -q \
