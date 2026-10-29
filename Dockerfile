@@ -35,7 +35,7 @@ RUN \
     && apt-get install -y libx11-xcb1 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
     && apt-get install -y libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 \
     && apt-get install -y libxcb-xkb1 libxkbcommon-x11-0 libxkbcommon0 xkb-data \
-    && apt-get install -y udev
+    && apt-get install -y udev device-tree-compiler
 
 
 #####################################################################################################
