@@ -202,7 +202,7 @@ USER root
 
 
 #####################################################################################################
-# Install the MCUXpresso Config tools
+# Install the MCUXpresso Config tools (pins, clocks, ...)
 # Install MCUXpresso Config Tools
 # The installer is downloaded manually from NXP.
 # installed as /opt/nxp/MCUX_CFG_26.09/bin/tools
