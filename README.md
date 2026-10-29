@@ -3,7 +3,8 @@ This project contains a blueprint for using NXP MCUXpresso with docker.
 It includes DevContainer files for VS Code, plus docker files to use and share in a CI/CD environment.
 
 
-The image is available on dockerhub: https://hub.docker.com/repository/docker/erichstyger/nxp-mcuxpresso-image/general
+The image is available on dockerhub: https://hub.docker.com/repository/docker/erichstyger/nxp-mcuxpresso-image
+
 
 ## Content
 The image/container includes the following:
