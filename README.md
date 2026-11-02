@@ -62,3 +62,15 @@ docker pull erichstyger/nxp-mcuxpresso-image:v2
 docker pull erichstyger/nxp-mcuxpresso-image:latest
 ```
 
+## Using the image from dockerhub
+```
+docker pull erichstyger/nxp-mcuxpresso-image:latest
+```
+
+```
+docker create -i -t --name nxp-mcuxpresso-container erichstyger/nxp-mcuxpresso-image
+```
+
+```
+docker start -i nxp-mcuxpresso-container
+```
