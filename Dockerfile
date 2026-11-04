@@ -242,10 +242,6 @@ RUN chmod +x /apps/config-tools-installer.deb.bin \
             } ) \
     && test "$(dpkg-query -W -f='${Status}' mcuxpresso-config-tools-26.09)" \
             = "install ok installed"
-#RUN \
-#    /apps/config-tools-installer.deb.bin -- -s
-#RUN \
-#    dpkg --configure -a
 RUN \
     rm /apps/config-tools-installer.deb.bin
 # Copy and extract the MCU data files for offline usage
