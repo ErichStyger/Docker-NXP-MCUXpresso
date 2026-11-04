@@ -57,7 +57,8 @@ RUN wget -q \
     && mkdir -p /opt/cmake \
     && tar -xzf /apps/cmake.tar.gz \
        --strip-components=1 \
-       -C /opt/cmake
+       -C /opt/cmake \
+    && rm /apps/cmake.tar.gz
 ENV PATH="/opt/cmake/bin:${PATH}"
 
 
@@ -68,7 +69,8 @@ RUN curl -fL \
        https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip \
        -o /apps/ninja.zip \
     && unzip -o /apps/ninja.zip -d /usr/local/bin \
-    && chmod +x /usr/local/bin/ninja
+    && chmod +x /usr/local/bin/ninja \
+    && rm /apps/ninja.zip
 
 
 #####################################################################################################
@@ -124,7 +126,8 @@ RUN \
     && dpkg --unpack JLink_Linux_${SEGGER_VERSION}_${HOST_MACHINE_INTEL64_ARM64}.deb \
     && rm -f /var/lib/dpkg/info/jlink.postinst \
     && dpkg --configure jlink \
-    && apt install -yf
+    && apt install -yf \
+    && rm /apps/JLink_Linux_${SEGGER_VERSION}_${HOST_MACHINE_INTEL64_ARM64}.deb
 
 #####################################################################################################
 # SEGGER SystemView, binary gets installed as /opt/SEGGER/SystemView_${SYSTEMVIEW_VERSION}/SystemView
@@ -136,8 +139,8 @@ RUN \
     cd /apps \
     && wget -O SystemView.deb \
        https://www.segger.com/downloads/systemview/SystemView_Linux_${SYSTEMVIEW_VERSION}_x86_64.deb \
-    && apt-get install ./SystemView.deb
-RUN rm /apps/SystemView.deb
+    && apt-get install ./SystemView.deb \
+    && rm /apps/SystemView.deb
 ENV PATH="/opt/SEGGER/SystemView_${SYSTEMVIEW_VERSION}/:${PATH}"
 
 
@@ -166,6 +169,7 @@ RUN mkdir -p /home/vscode/.local/share/applications
 RUN sudo /apps/mcuxpresso-installer
 # Back as root
 USER root
+RUN rm /apps/mcuxpresso-installer
 # need to set the following variable for the Installer GUI to work
 ENV XDG_SESSION_TYPE=wayland
 # Install needed libraries to run the MCUXpresso Installer GUI
@@ -231,7 +235,8 @@ RUN \
     cd /apps \
     && chmod +x /apps/config-tools-installer.deb.bin \
     && /apps/config-tools-installer.deb.bin -- -s \
-    && dpkg --configure -a
+    && dpkg --configure -a \
+    && rm /apps/config-tools-installer.deb.bin
 # Copy and extract the MCU data files for offline usage
 COPY config_data.zip /apps/config_data.zip
 # Install as vscode user
@@ -258,7 +263,8 @@ RUN dpkg-deb -x /apps/pemicro-gdb.deb / \
     && install -m 755 \
        /usr/local/pemicrogdbserver/drivers/libp64-0.1.so.4 \
        /usr/lib/libp64-0.1.so.4 \
-    && ldconfig
+    && ldconfig \
+    && rm /apps/pemicro-gdb.deb
 # add to path
 ENV PATH="/usr/local/pemicrogdbserver:/usr/local/pemicrogdbserver/gdb:${PATH}"
 
@@ -295,19 +301,22 @@ RUN set -eu; \
     PATH="/tmp/nxp-udev-shim:$PATH" ./linkserver-installer acceptLicense skipIdeSelect; \
     PATH="/tmp/nxp-udev-shim:$PATH" dpkg --configure -a; \
     rm -rf /tmp/nxp-udev-shim; \
-    dpkg --audit
+    dpkg --audit \
+    && rm /apps/linkserver-installer
 # add LinkServer to the PATH
 ENV PATH="/usr/local/LinkServer_${LINKSERVER_VERSION}:${PATH}"
 
 #####################################################################################################
 # Download and install addditional NXP debugger support
+ARG NXP_DEBUG_COMMON_VERSION="26.09"
 RUN \
     cd /apps \
-    && wget -O debug_common.tar "https://www.nxp.com/lgfiles/updates/mcuxpresso/debug_common-26.09.tar"
+    && wget -O debug_common.tar "https://www.nxp.com/lgfiles/updates/mcuxpresso/debug_common-${NXP_DEBUG_COMMON_VERSION}.tar"
 USER vscode
 RUN \
-    mkdir -p /home/vscode/.mcuxpressotools/debug_common-26.09 \
-    && tar -xf /apps/debug_common.tar -C /home/vscode/.mcuxpressotools/debug_common-26.09
+    mkdir -p /home/vscode/.mcuxpressotools/debug_common-${NXP_DEBUG_COMMON_VERSION} \
+    && tar -xf /apps/debug_common.tar -C /home/vscode/.mcuxpressotools/debug_common-${NXP_DEBUG_COMMON_VERSION} \
+    && rm /apps/debug_common.tar
 # back to root
 USER root
 
