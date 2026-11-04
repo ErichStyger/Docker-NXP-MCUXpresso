@@ -328,6 +328,19 @@ RUN \
 # back to root
 USER root
 
+
+#####################################################################################################
+# NXP MCUXpresso Arm Toolchain add-ons
+ARG NXP_ARM_TOOLCHAIN_ADD_ONS_VERSION="14.2.3-131026"
+RUN \
+    cd /apps \
+    && wget -O additionalCLibs.tar.xz "https://www.nxp.com/lgfiles/updates/mcuxpresso/AdditionalCLibs-${NXP_ARM_TOOLCHAIN_ADD_ONS_VERSION}-linux.tar.xz"
+USER vscode
+RUN \
+    mkdir -p /home/vscode/.mcuxpressotools \
+    && tar -xf /apps/additionalCLibs.tar.xz -C /home/vscode/.mcuxpressotools
+USER root
+
 #####################################################################################################
 # Install SSH client for private GitHub submodules
 RUN apt-get update && \
