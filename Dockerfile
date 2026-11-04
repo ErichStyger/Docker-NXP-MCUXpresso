@@ -319,7 +319,7 @@ ENV PATH="/usr/local/LinkServer_${LINKSERVER_VERSION}:${PATH}"
 
 #####################################################################################################
 # Download and install addditional NXP debugger support
-ARG NXP_DEBUG_COMMON_VERSION="26.09"
+ARG NXP_DEBUG_COMMON_VERSION="26.10"
 RUN \
     cd /apps \
     && wget -O debug_common.tar "https://www.nxp.com/lgfiles/updates/mcuxpresso/debug_common-${NXP_DEBUG_COMMON_VERSION}.tar"
