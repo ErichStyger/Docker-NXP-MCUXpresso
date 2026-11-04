@@ -231,12 +231,23 @@ RUN apt-get update \
     && update-mime-database /usr/share/mime \
     && dpkg --configure -a
 COPY mcuxpresso-config-tools*.deb.bin /apps/config-tools-installer.deb.bin
+RUN chmod +x /apps/config-tools-installer.deb.bin \
+    && sed -i '2i set -x' /var/lib/dpkg/info/shared-mime-info.postinst \
+    && ( /apps/config-tools-installer.deb.bin -- -s \
+         || { \
+              apt-get update \
+              && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                   --reinstall shared-mime-info \
+              && dpkg --configure -a; \
+            } ) \
+    && test "$(dpkg-query -W -f='${Status}' mcuxpresso-config-tools-26.09)" \
+            = "install ok installed"
+#RUN \
+#    /apps/config-tools-installer.deb.bin -- -s
+#RUN \
+#    dpkg --configure -a
 RUN \
-    cd /apps \
-    && chmod +x /apps/config-tools-installer.deb.bin \
-    && /apps/config-tools-installer.deb.bin -- -s \
-    && dpkg --configure -a \
-    && rm /apps/config-tools-installer.deb.bin
+    rm /apps/config-tools-installer.deb.bin
 # Copy and extract the MCU data files for offline usage
 COPY config_data.zip /apps/config_data.zip
 # Install as vscode user
