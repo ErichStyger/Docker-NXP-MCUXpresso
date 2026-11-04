@@ -250,7 +250,8 @@ COPY config_data.zip /apps/config_data.zip
 USER vscode
 RUN \
     mkdir -p /home/vscode/.nxp/ \
-    && unzip -q /apps/config_data.zip -d /home/vscode/.nxp
+    && unzip -q /apps/config_data.zip -d /home/vscode/.nxp \
+    && sudo rm /apps/config_data.zip
 # Back as root
 USER root
 
