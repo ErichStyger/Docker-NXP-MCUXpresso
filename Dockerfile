@@ -316,7 +316,7 @@ USER vscode
 RUN \
     mkdir -p /home/vscode/.mcuxpressotools/debug_common-${NXP_DEBUG_COMMON_VERSION} \
     && tar -xf /apps/debug_common.tar -C /home/vscode/.mcuxpressotools/debug_common-${NXP_DEBUG_COMMON_VERSION} \
-    && rm /apps/debug_common.tar
+    && sudo rm /apps/debug_common.tar
 # back to root
 USER root
 
