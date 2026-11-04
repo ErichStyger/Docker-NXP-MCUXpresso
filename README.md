@@ -5,6 +5,8 @@ It includes DevContainer files for VS Code, plus docker files to use and share i
 
 The image is available on dockerhub: https://hub.docker.com/repository/docker/erichstyger/nxp-mcuxpresso-image
 
+Additionally, read my blog article on that subject: https://mcuoneclipse.com/2026/10/25/all-in-one-docker-image-for-nxp-mcuxpresso-vs-code-and-ci-cd-pipeline/ 
+
 
 ## Content
 The image/container includes the following:
