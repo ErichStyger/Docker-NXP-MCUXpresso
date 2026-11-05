@@ -347,6 +347,81 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends openssh-client
 
 #####################################################################################################
+# Install extensions as the user who will run VS Code.
+# In order to make the extensions available to any VS Code profiles, we need to register them properly.
+# To install the extensions into the image, a temporary VS Code server gets installed into the image.
+# VS Code supports 'Apply Extension to all Profiles'. Internally, this uses the extension metadata flag 
+# 'isApplicationScoped', see https://code.visualstudio.com/docs/configure/profiles.
+# For this, we run a small script to set that flag in the extension meta-data.
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+         curl ca-certificates tar \
+    && mkdir -p /opt/vscode-extension-installer \
+    && curl -fsSL \
+         https://update.code.visualstudio.com/latest/server-linux-x64/stable \
+         -o /tmp/vscode-server.tar.gz \
+    && tar -xzf /tmp/vscode-server.tar.gz \
+         -C /opt/vscode-extension-installer \
+         --strip-components=1 \
+    && rm /tmp/vscode-server.tar.gz
+
+USER vscode
+RUN set -eu; \
+    mkdir -p /home/vscode/.vscode-server/extensions; \
+    for extension in \
+        mcu-debug.debug-tracker-vscode \
+        marus25.cortex-debug \
+        nxpsemiconductors.mcuxpresso \
+        ms-vscode.cpptools \
+        ms-vscode.cmake-tools \
+        ms-vscode.vscode-serial-monitor \
+        ms-vscode.cpptools-extension-pack \
+        ms-azuretools.vscode-docker \
+        jacqueslucke.gcov-viewer; \
+    do \
+        /opt/vscode-extension-installer/bin/code-server \
+            --extensions-dir /home/vscode/.vscode-server/extensions \
+            --install-extension "$extension" \
+            --force; \
+    done
+# Make the preinstalled extensions available to all VS Code profiles.
+RUN /opt/vscode-extension-installer/node <<'JS'
+const fs = require('fs');
+const path = require('path');
+
+const directory = '/home/vscode/.vscode-server/extensions';
+const indexPath = path.join(directory, 'extensions.json');
+
+const extensions = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+
+for (const extension of extensions) {
+    extension.metadata ??= {};
+    extension.metadata.isApplicationScoped = true;
+}
+
+fs.writeFileSync(indexPath, JSON.stringify(extensions, null, 2));
+
+// Keep the metadata in each installed extension consistent as well.
+for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+
+    const manifestPath = path.join(directory, entry.name, 'package.json');
+    if (!fs.existsSync(manifestPath)) continue;
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest.__metadata ??= {};
+    manifest.__metadata.isApplicationScoped = true;
+
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+}
+JS
+
+USER root
+# The temporary server is only needed to install the extensions.
+RUN rm -rf /opt/vscode-extension-installer
+
+#####################################################################################################
 # Set environment variables needed: 
 # where the MCUXpresso SDK is located:
 ENV MCUXPRESSO_SDK_PATH=/workspace/sdk/
