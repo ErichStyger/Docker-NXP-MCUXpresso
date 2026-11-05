@@ -331,10 +331,10 @@ USER root
 
 #####################################################################################################
 # NXP MCUXpresso Arm Toolchain add-ons
-ARG NXP_ARM_TOOLCHAIN_ADD_ONS_VERSION="14.2.3-131026"
+ARG NXP_ARM_TOOLCHAIN_ADDON_VERSION="14.2.3-131026"
 RUN \
     cd /apps \
-    && wget -O additionalCLibs.tar.xz "https://www.nxp.com/lgfiles/updates/mcuxpresso/AdditionalCLibs-${NXP_ARM_TOOLCHAIN_ADD_ONS_VERSION}-linux.tar.xz"
+    && wget -O additionalCLibs.tar.xz "https://www.nxp.com/lgfiles/updates/mcuxpresso/AdditionalCLibs-${NXP_ARM_TOOLCHAIN_ADDON_VERSION}-linux.tar.xz"
 USER vscode
 RUN \
     mkdir -p /home/vscode/.mcuxpressotools \
