@@ -329,6 +329,19 @@ RUN \
 USER root
 
 
+# #####################################################################################################
+# ARM Toolchain for MCUXpresso
+ARG NXP_ARM_TOOLCHAIN_VERSION="14.2.rel1"
+RUN \
+    cd /apps \
+    && wget -O toolchain.tar.xz "https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-${NXP_ARM_TOOLCHAIN_VERSION}-x86_64-arm-none-eabi.tar.xz"
+USER vscode
+RUN \
+    mkdir -p /home/vscode/.mcuxpressotools \
+    && tar -xf /apps/toolchain.tar.xz -C /home/vscode/.mcuxpressotools
+USER root
+
+
 #####################################################################################################
 # NXP MCUXpresso Arm Toolchain add-ons
 ARG NXP_ARM_TOOLCHAIN_ADDON_VERSION="14.2.3-131026"
