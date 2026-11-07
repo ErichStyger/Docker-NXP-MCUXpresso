@@ -35,7 +35,9 @@ RUN \
     && apt-get install -y libx11-xcb1 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
     && apt-get install -y libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-util1 libxcb-xfixes0 \
     && apt-get install -y libxcb-xkb1 libxkbcommon-x11-0 libxkbcommon0 xkb-data \
-    && apt-get install -y udev device-tree-compiler
+    && apt-get install -y udev device-tree-compiler \
+    && apt-get install -y gperf ccache dfu-util python3-setuptools python3-wheel xz-utils make \
+    && apt-get install -y pkg-config libssl-dev libdbus-1-dev libglib2.0-dev libavahi-client-dev libgirepository1.0-dev libcairo2-dev libreadline-dev 
 
 
 #####################################################################################################
