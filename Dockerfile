@@ -345,7 +345,7 @@ USER root
 
 
 #####################################################################################################
-# NXP MCUXpresso Arm Toolchain add-ons
+# NXP MCUXpresso ARM Toolchain and standalone add-ons
 ARG NXP_ARM_TOOLCHAIN_ADDON_VERSION="14.2.3-131026"
 RUN \
     cd /apps \
