@@ -342,6 +342,7 @@ RUN \
     mkdir -p /home/vscode/.mcuxpressotools \
     && tar -xf /apps/toolchain.tar.xz -C /home/vscode/.mcuxpressotools
 USER root
+RUN rm /apps/toolchain.tar.xz
 
 
 #####################################################################################################
