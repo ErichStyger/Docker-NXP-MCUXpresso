@@ -361,6 +361,23 @@ RUN \
     rm /apps/additionalCLibs.tar.xz \
     && rm /apps/additionalCLibs-standalone.tar.xz
 
+#####################################################################################################
+# Download and install Zephyr minimal SDK
+ARG ZEPHYR_SDK_VERSION="1.0.1"
+RUN \
+    cd /apps \
+    && wget -O zephyr-sdk-${ZEPHYR_SDK_VERSION}.tar.xz "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VERSION}/zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64_minimal.tar.xz" \
+    && wget -O zephyr-toolchain.tar.xz "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v1.0.1/toolchain_gnu_linux-x86_64_arm-zephyr-eabi.tar.xz"
+USER vscode
+RUN \
+    tar -xf /apps/zephyr-sdk-${ZEPHYR_SDK_VERSION}.tar.xz -C /home/vscode \
+    && cmake -P /home/vscode/zephyr-sdk-${ZEPHYR_SDK_VERSION}/cmake/zephyr_sdk_export.cmake \
+    && mkdir /home/vscode/zephyr-sdk-${ZEPHYR_SDK_VERSION}/gnu \
+    && tar -xf /apps/zephyr-toolchain.tar.xz -C /home/vscode/zephyr-sdk-${ZEPHYR_SDK_VERSION}/gnu
+USER root
+RUN \
+    rm /apps/zephyr-sdk-${ZEPHYR_SDK_VERSION}.tar.xz \
+    && rm /apps/zephyr-toolchain.tar.xz
 
 #####################################################################################################
 # Install SSH client for private GitHub submodules
