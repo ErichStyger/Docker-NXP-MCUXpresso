@@ -45,7 +45,7 @@ docker login
 ```
 Create a tagged image:
 ```
-docker tag nxp-mcuxpresso-image erichstyger/nxp-mcuxpresso-image:v2
+docker tag nxp-mcuxpresso-image erichstyger/nxp-mcuxpresso-image:v3
 ```
 additionally, tag it as the latest version:
 ```
@@ -54,13 +54,13 @@ docker tag nxp-mcuxpresso-image erichstyger/nxp-mcuxpresso-image:latest
 
 Push it to the dockerhub repository:
 ```
-docker push erichstyger/nxp-mcuxpresso-image:v2
+docker push erichstyger/nxp-mcuxpresso-image:v3
 docker push erichstyger/nxp-mcuxpresso-image:latest
 ```
 
 Pulling an image from the repository on https://hub.docker.com/:
 ```
-docker pull erichstyger/nxp-mcuxpresso-image:v2
+docker pull erichstyger/nxp-mcuxpresso-image:v3
 docker pull erichstyger/nxp-mcuxpresso-image:latest
 ```
 
