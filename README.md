@@ -5,22 +5,25 @@ It includes DevContainer files for VS Code, plus docker files to use and share i
 
 The image is available on dockerhub: https://hub.docker.com/repository/docker/erichstyger/nxp-mcuxpresso-image
 
-Additionally, read my blog article on that subject: https://mcuoneclipse.com/2026/10/25/all-in-one-docker-image-for-nxp-mcuxpresso-vs-code-and-ci-cd-pipeline/ 
-
+Additionally, read my blog articles on that subject:
+- All‑in‑One Docker Image for NXP MCUXpresso, VS Code and CI/CD Pipeline: https://mcuoneclipse.com/2026/10/25/all-in-one-docker-image-for-nxp-mcuxpresso-vs-code-and-ci-cd-pipeline/ 
+- Offline VS Code DevContainers with Preinstalled Extensions: https://mcuoneclipse.com/2026/11/08/offline-vs-code-devcontainers-with-preinstalled-extensions/
 
 ## Content
 The image/container includes the following:
 - Toolchain for ARM Cortex-M, including CMake and Ninja
 - Debugging tools: NXP LinkServer, SEGGER J-Link and PEMicro (P&E)
 - NXP MCUXpresso Installer to install extra components if needed
-- NXP Config tools with offline data files
+- Optionally install NXP Config tools with offline data files
 - all other necessary tools for development
 
 ## NXP Config Tools
-If you want to rebuild the image with the NXP config tools:
+Optionally, if you want to build the image with the NXP config tools.
+The tools are not included here, as you have to download them from the link below and accept the licensing terms first.
 
 - download the DEB package from https://www.nxp.com/design/design-center/software/development-software/mcuxpresso-software-and-tools-/mcuxpresso-config-tools-pins-clocks-and-peripherals:MCUXpresso-Config-Tools
-- place in this directory and name it `mcuxpresso-config-tools-26.09-1_amd64.deb`
+- place it into the 'config-tools' directory and name so it matches `mcuxpresso-config-tools*.deb.bin`
+- place any config tools offline data files into the 'config-tools' folder
 
 
 ## Using Docker
@@ -76,3 +79,8 @@ docker create -i -t --name nxp-mcuxpresso-container erichstyger/nxp-mcuxpresso-i
 ```
 docker start -i nxp-mcuxpresso-container
 ```
+
+
+I hope this is useful,
+
+Erich
