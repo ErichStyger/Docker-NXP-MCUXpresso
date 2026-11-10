@@ -242,7 +242,7 @@ RUN --mount=type=bind,source=config-tools,target=/tmp/config-tools \
         cp -a /tmp/config-tools/mcuxpresso-config-tools*.deb.bin /apps/config-tools-installer.deb.bin; \
     fi
 RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
-            chmod +x /apps/config-tools-installer.deb.bin \
+        chmod +x /apps/config-tools-installer.deb.bin \
         && sed -i '2i set -x' /var/lib/dpkg/info/shared-mime-info.postinst \
         && ( /apps/config-tools-installer.deb.bin -- -s \
             || { \
