@@ -22,6 +22,9 @@ ARG HOST_MACHINE_X64_ARM64="x64"
 ARG HOST_MACHINE_INTEL64_ARM64="x86_64"
 #ARG HOST_MACHINE_INTEL64_ARM64="arm64"
 
+# Set to 0 to disable, or 1 to enable
+ARG INSTALL_CONFIG_TOOLS=1
+
 #####################################################################################################
 # Install prerequisites
 RUN \
@@ -215,8 +218,7 @@ RUN dpkg-divert --local --rename --add /usr/bin/pkexec \
 # Create directories expected by the MCUXpresso VS Code extension:
 USER vscode
 RUN \
-       mkdir -p /home/vscode/.mcuxpressotools/.mcux-venv-3.12/bin/ \
-    && mkdir -p /home/vscode/.mcuxpressotools/mcux-fixelf-14.2.2/
+       mkdir -p /home/vscode/.mcuxpressotools/mcux-fixelf-14.2.2/
 # Back to root
 USER root
 
@@ -227,33 +229,47 @@ USER root
 # The installer is downloaded manually from NXP.
 # installed as /opt/nxp/MCUX_CFG_26.09/bin/tools
 # Prepare MIME database before installing MCUXpresso Config Tools
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-       shared-mime-info \
-    && update-mime-database /usr/share/mime \
-    && dpkg --configure -a
-COPY mcuxpresso-config-tools*.deb.bin /apps/config-tools-installer.deb.bin
-RUN chmod +x /apps/config-tools-installer.deb.bin \
-    && sed -i '2i set -x' /var/lib/dpkg/info/shared-mime-info.postinst \
-    && ( /apps/config-tools-installer.deb.bin -- -s \
-         || { \
-              apt-get update \
-              && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                   --reinstall shared-mime-info \
-              && dpkg --configure -a; \
-            } ) \
-    && test "$(dpkg-query -W -f='${Status}' mcuxpresso-config-tools-26.09)" \
-            = "install ok installed"
-RUN \
-    rm /apps/config-tools-installer.deb.bin
+RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+        apt-get update \
+        && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        shared-mime-info \
+        && update-mime-database /usr/share/mime \
+        && dpkg --configure -a; \
+    fi
+# Cannot use a simply COPY as it cannot be combined with the 'if-fi' check
+RUN --mount=type=bind,source=config-tools,target=/tmp/config-tools \
+    if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+        cp -a /tmp/config-tools/mcuxpresso-config-tools*.deb.bin /apps/config-tools-installer.deb.bin; \
+    fi
+RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+            chmod +x /apps/config-tools-installer.deb.bin \
+        && sed -i '2i set -x' /var/lib/dpkg/info/shared-mime-info.postinst \
+        && ( /apps/config-tools-installer.deb.bin -- -s \
+            || { \
+                apt-get update \
+                && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                    --reinstall shared-mime-info \
+                && dpkg --configure -a; \
+                } ) \
+        && test "$(dpkg-query -W -f='${Status}' mcuxpresso-config-tools-26.09)" \
+                = "install ok installed"; \
+    fi
+RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+        rm /apps/config-tools-installer.deb.bin; \
+    fi
 # Copy and extract the MCU data files for offline usage
-COPY config_data.zip /apps/config_data.zip
+# Cannot use a simply COPY as it cannot be combined with the 'if-fi' check
+RUN --mount=type=bind,source=config-tools,target=/tmp/config-tools \
+    if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+        cp -a /tmp/config-tools/config_data.zip /apps/config_data.zip; \
+    fi
 # Install as vscode user
 USER vscode
-RUN \
-    mkdir -p /home/vscode/.nxp/ \
-    && unzip -q /apps/config_data.zip -d /home/vscode/.nxp \
-    && sudo rm /apps/config_data.zip
+RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+        mkdir -p /home/vscode/.nxp/ \
+        && unzip -q /apps/config_data.zip -d /home/vscode/.nxp \
+        && sudo rm /apps/config_data.zip; \
+    fi
 # Back as root
 USER root
 
