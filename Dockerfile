@@ -228,33 +228,37 @@ USER root
 # Install MCUXpresso Config Tools
 # The installer is downloaded manually from NXP.
 # installed as /opt/nxp/MCUX_CFG_26.09/bin/tools
-# Prepare MIME database before installing MCUXpresso Config Tools
-RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
-        apt-get update \
-        && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        shared-mime-info \
-        && update-mime-database /usr/share/mime \
-        && dpkg --configure -a; \
-    fi
-# Cannot use a simply COPY as it cannot be combined with the 'if-fi' check
+# Prepare MIME database and install MCUXpresso Config Tools
+# Cannot use a simple COPY as it cannot be combined with the 'if-fi' check
 RUN --mount=type=bind,source=config-tools,target=/tmp/config-tools \
     if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+        set -eux; \
+        ls /tmp/config-tools/mcuxpresso-config-tools*.deb.bin >/dev/null; \
         cp -a /tmp/config-tools/mcuxpresso-config-tools*.deb.bin /apps/config-tools-installer.deb.bin; \
-    fi
-RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
-        chmod +x /apps/config-tools-installer.deb.bin \
-        && sed -i '2i set -x' /var/lib/dpkg/info/shared-mime-info.postinst \
-        && ( /apps/config-tools-installer.deb.bin -- -s \
-            || { \
-                apt-get update \
-                && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                    --reinstall shared-mime-info \
-                && dpkg --configure -a; \
-                } ) \
-        && test "$(dpkg-query -W -f='${Status}' mcuxpresso-config-tools-26.09)" \
-                = "install ok installed"; \
-    fi
-RUN if [ "$INSTALL_CONFIG_TOOLS" = "1" ]; then \
+        apt-get -o Acquire::Retries=5 update; \
+        DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y shared-mime-info; \
+        update-mime-database /usr/share/mime; \
+        dpkg --configure -a; \
+        chmod +x /apps/config-tools-installer.deb.bin; \
+        sed -i '2i set -x' /var/lib/dpkg/info/shared-mime-info.postinst; \
+        if ! /apps/config-tools-installer.deb.bin -- -s; then \
+            echo "MCUXpresso Config Tools install failed, collecting diagnostics and retrying..."; \
+            dpkg --audit || true; \
+            tail -n 200 /var/log/dpkg.log || true; \
+            apt-get -o Acquire::Retries=5 update; \
+            DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 install -y --reinstall shared-mime-info; \
+            dpkg --configure -a; \
+            apt-get -o Acquire::Retries=5 install -f -y; \
+            if ! /apps/config-tools-installer.deb.bin -- -s; then \
+                echo "MCUXpresso Config Tools install failed after retry."; \
+                dpkg --audit || true; \
+                tail -n 200 /var/log/dpkg.log || true; \
+                exit 1; \
+            fi; \
+        fi; \
+        dpkg --configure -a; \
+        apt-get -o Acquire::Retries=5 install -f -y; \
+        test "$(dpkg-query -W -f='${Status}' mcuxpresso-config-tools-26.09)" = "install ok installed"; \
         rm /apps/config-tools-installer.deb.bin; \
     fi
 # Copy and extract the MCU data files for offline usage
